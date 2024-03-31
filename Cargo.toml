@@ -1,0 +1,12 @@
+[package]
+name = "hftwo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+crc = "3.0"
+defmt = { version = "0.3", optional = true }
+zerocopy = { version = "0.7", features = ["derive"] }
+
+[features]
+defmt = ["dep:defmt"]
