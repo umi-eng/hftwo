@@ -83,11 +83,11 @@ impl<'a> Packet<'a> {
         Self(&buf[0..len])
     }
 
-    /// Returns the payload length of the packet.
+    /// Returns the length of the packet including the header byte.
     ///
-    /// The total packet length is the payload length + 1.
+    /// Use `.data().len()` to get the size of just the payload.
     pub fn len(&self) -> usize {
-        self.0[0] as usize & 0b00111111
+        (self.0[0] as usize & 0b00111111) + 1
     }
 
     /// Get the kind of packet.
@@ -97,7 +97,7 @@ impl<'a> Packet<'a> {
 
     /// Access the packet data.
     pub fn data(&self) -> &[u8] {
-        &self.0[1..self.len() + 1]
+        &self.0[1..self.len()]
     }
 }
 
@@ -132,22 +132,25 @@ mod tests {
     fn test_stdout() {
         let packet = Packet(TEST_PACKET[0]);
         assert!(packet.kind() == PacketKind::StdOut);
-        assert_eq!(packet.len(), 3);
+        assert_eq!(packet.len(), 4);
+        assert_eq!(packet.data().len(), 3);
         assert_eq!(packet.data(), &[0x01, 0x02, 0x03]);
 
         let packet = Packet(TEST_PACKET[1]);
         assert!(packet.kind() == PacketKind::StdOut);
-        assert_eq!(packet.len(), 5);
+        assert_eq!(packet.len(), 6);
+        assert_eq!(packet.data().len(), 5);
         assert_eq!(packet.data(), &[0x04, 0x05, 0x06, 0x07, 0x08]);
 
         let packet = Packet(TEST_PACKET[2]);
         assert!(packet.kind() == PacketKind::StdOut);
-        assert_eq!(packet.len(), 0);
+        assert_eq!(packet.len(), 1);
+        assert_eq!(packet.data().len(), 0);
         assert_eq!(packet.data(), &[]);
 
         let packet = Packet(TEST_PACKET[3]);
         assert!(packet.kind() == PacketKind::StdErr);
-        assert_eq!(packet.len(), 16);
+        assert_eq!(packet.len(), 17);
         assert_eq!(
             packet.data(),
             &[
