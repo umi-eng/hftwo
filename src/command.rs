@@ -138,6 +138,17 @@ impl From<u8> for Status {
     }
 }
 
+impl Into<u8> for Status {
+    fn into(self) -> u8 {
+        match self {
+            Self::Sucess => 0x00,
+            Self::Unknown => 0x01,
+            Self::Error => 0x02,
+            Self::Other(value) => value,
+        }
+    }
+}
+
 /// Command response.
 #[derive(Debug)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
