@@ -46,6 +46,8 @@ impl From<&Packet<'_>> for PacketKind {
 /// let string = str::from_utf8(packet.data()).unwrap(); // Get the data
 /// println!("Output: {}", string); // Prints: "Output: Hello"
 /// ```
+#[derive(Debug)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct Packet<'a>(&'a [u8]);
 
 impl<'a> Packet<'a> {
