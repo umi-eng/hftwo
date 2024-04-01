@@ -4,6 +4,8 @@ For working with the [HF2 protocol](https://github.com/microsoft/uf2) both as th
 
 Why the name? `hf2` was already taken and only provides utility for the host component.
 
+Warning: whilst this library is `0.1.x` there will be no SemVer compatibility guarantees. Use at your own risk.
+
 ## Getting started
 
 ```shell
