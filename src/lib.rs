@@ -6,7 +6,7 @@ pub mod command;
 ///
 /// Stored in the top two bits of the first byte of the packet.
 #[derive(Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(u8)]
 pub enum PacketKind {
     CommandInner = 0x00,

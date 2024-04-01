@@ -3,7 +3,7 @@
 /// Specifies the commands in the spec as well as `Other` for user-defined
 /// commands.
 #[derive(Debug, Clone, Copy)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(u32)]
 pub enum Command {
     BinInfo = 0x0001,
@@ -38,7 +38,7 @@ impl From<u32> for Command {
 
 /// Command request.
 #[derive(Debug)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(C)]
 pub struct Request<'a> {
     command_id: Command,
@@ -50,7 +50,7 @@ pub struct Request<'a> {
 
 /// Response status.
 #[derive(Debug, Clone, Copy)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(u32)]
 pub enum ResponseStatus {
     /// The command was processed successfully.
@@ -76,7 +76,7 @@ impl From<u8> for ResponseStatus {
 
 /// Command response.
 #[derive(Debug)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(C)]
 pub struct Response<'a> {
     tag: u16,
