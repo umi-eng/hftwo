@@ -153,9 +153,51 @@ impl Into<u8> for Status {
 #[derive(Debug)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(C)]
-pub struct Response<'a> {
-    tag: u16,
-    status: u8,
-    status_info: ResponseStatus,
-    data: &'a [u8],
+pub struct Response<'a>(&'a [u8]);
+
+impl<'a> Response<'a> {
+    pub const HEADER_LEN: usize = 4;
+
+    /// Creates a new [`Response`].
+    ///
+    /// `buf` must be 8 bytes larger than `data` to fit the header.
+    pub fn new(buf: &'a mut [u8], tag: u16, status: Status, status_info: u8, data: &[u8]) -> Self {
+        // ensure header and data will fit in buffer
+        assert!(buf.len() == data.len() + Self::HEADER_LEN);
+
+        buf[0..2].copy_from_slice(&tag.to_le_bytes());
+        buf[2] = status.into();
+        buf[3] = status_info;
+        buf[Self::HEADER_LEN..].copy_from_slice(data);
+
+        Self(buf)
+    }
+
+    /// Creates a new [`Response`] from a byte array.
+    pub fn from_bytes(buf: &'a [u8]) -> Self {
+        assert!(buf.len() >= Self::HEADER_LEN);
+        Self(buf)
+    }
+
+    /// Returns the tag.
+    pub fn tag(&self) -> u16 {
+        let bytes = &self.0[0..2];
+        u16::from_le_bytes([bytes[0], bytes[1]])
+    }
+
+    /// Returns the status.
+    pub fn status(&self) -> Status {
+        Status::from(self.0[2])
+    }
+
+    /// Returns the status info byte.
+    pub fn status_info(&self) -> u8 {
+        self.0[3]
+    }
+
+    /// Returns a slice containing the data.
+    pub fn data(&self) -> &[u8] {
+        &self.0[Self::HEADER_LEN..]
+    }
+}
 }
