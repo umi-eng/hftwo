@@ -2,6 +2,38 @@
 
 pub mod command;
 
+/// Packet kind.
+///
+/// Stored in the top two bits of the first byte of the packet.
+#[derive(Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[repr(u8)]
+pub enum PacketKind {
+    CommandInner = 0x00,
+    CommandFinal = 0x40,
+    StdOut = 0x80,
+    StdErr = 0xC0,
+}
+
+impl From<u8> for PacketKind {
+    fn from(value: u8) -> Self {
+        match value & 0b11000000 {
+            0x00 => Self::CommandInner,
+            0x40 => Self::CommandFinal,
+            0x80 => Self::StdOut,
+            0xC0 => Self::StdErr,
+            // since we're masking the top two bits, there are only 4 possible values.
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl From<&Packet<'_>> for PacketKind {
+    fn from(value: &Packet) -> Self {
+        Self::from(value.0[0])
+    }
+}
+
 /// Packet view into a byte slice.
 pub struct Packet<'a>(&'a [u8]);
 
@@ -26,24 +58,8 @@ impl<'a> Packet<'a> {
         self.0[0] as usize & 0b00111111
     }
 
-    /// Returns `true` if the type is an inner command packet.
-    pub fn command_inner(&self) -> bool {
-        self.0[0] & 0b11000000 == 0x00
-    }
-
-    /// Returns `true` if the type is a final command packet.
-    pub fn command_final(&self) -> bool {
-        self.0[0] & 0b11000000 == 0x40
-    }
-
-    /// Returns `true` if the packet contains serial `stdout` data.
-    pub fn serial_stdout(&self) -> bool {
-        self.0[0] & 0b11000000 == 0x80
-    }
-
-    /// Returns `true` if the packet contains serial `stderr` data.
-    pub fn serial_stderr(&self) -> bool {
-        self.0[0] & 0b11000000 == 0xC0
+    pub fn kind(&self) -> PacketKind {
+        PacketKind::from(self)
     }
 
     /// Access the packet data.
@@ -70,34 +86,34 @@ mod tests {
     #[test]
     fn test_packet() {
         let packet = Packet(&[0, 0xFF, 0xFF]);
-        assert!(packet.command_inner());
+        assert!(packet.kind() == PacketKind::CommandInner);
         let packet = Packet(&[0x40, 0xFF, 0xFF]);
-        assert!(packet.command_final());
+        assert!(packet.kind() == PacketKind::CommandFinal);
         let packet = Packet(&[0x80, 0xFF, 0xFF]);
-        assert!(packet.serial_stdout());
+        assert!(packet.kind() == PacketKind::StdOut);
         let packet = Packet(&[0xC0, 0xFF, 0xFF]);
-        assert!(packet.serial_stderr());
+        assert!(packet.kind() == PacketKind::StdErr);
     }
 
     #[test]
     fn test_stdout() {
         let packet = Packet(TEST_PACKET[0]);
-        assert!(packet.serial_stdout());
+        assert!(packet.kind() == PacketKind::StdOut);
         assert_eq!(packet.len(), 3);
         assert_eq!(packet.data(), &[0x01, 0x02, 0x03]);
 
         let packet = Packet(TEST_PACKET[1]);
-        assert!(packet.serial_stdout());
+        assert!(packet.kind() == PacketKind::StdOut);
         assert_eq!(packet.len(), 5);
         assert_eq!(packet.data(), &[0x04, 0x05, 0x06, 0x07, 0x08]);
 
         let packet = Packet(TEST_PACKET[2]);
-        assert!(packet.serial_stdout());
+        assert!(packet.kind() == PacketKind::StdOut);
         assert_eq!(packet.len(), 0);
         assert_eq!(packet.data(), &[]);
 
         let packet = Packet(TEST_PACKET[3]);
-        assert!(packet.serial_stderr());
+        assert!(packet.kind() == PacketKind::StdErr);
         assert_eq!(packet.len(), 16);
         assert_eq!(
             packet.data(),
