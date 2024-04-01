@@ -52,7 +52,7 @@ pub struct Request<'a> {
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(u32)]
-pub enum ResponseStatus {
+pub enum Status {
     /// The command was processed successfully.
     Sucess = 0x00,
     /// Command ID was not known to the device.
@@ -63,7 +63,7 @@ pub enum ResponseStatus {
     Other(u8),
 }
 
-impl From<u8> for ResponseStatus {
+impl From<u8> for Status {
     fn from(value: u8) -> Self {
         match value {
             0x00 => Self::Sucess,
