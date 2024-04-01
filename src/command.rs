@@ -58,12 +58,58 @@ impl Into<u32> for Command {
 #[derive(Debug)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(C)]
-pub struct Request<'a> {
-    command_id: Command,
-    tag: u16,
-    _reserved_0: u8,
-    _reserved_1: u8,
-    data: &'a [u8],
+pub struct Request<'a>(&'a [u8]);
+
+impl<'a> Request<'a> {
+    pub const HEADER_LEN: usize = 8;
+
+    /// Creates a new [`Request`].
+    ///
+    /// `buf` must be 8 bytes larger than `data` to fit the header.
+    pub fn new(buf: &'a mut [u8], command: Command, tag: u16, data: &[u8]) -> Self {
+        // ensure header and data will fit in buffer
+        assert!(buf.len() == (data.len() + Self::HEADER_LEN));
+
+        // write command id
+        let cmd: u32 = command.into();
+        buf[0..4].copy_from_slice(&cmd.to_le_bytes());
+
+        // write tag
+        buf[4..6].copy_from_slice(&tag.to_le_bytes());
+
+        // write data
+        buf[8..].copy_from_slice(data);
+
+        Self(buf)
+    }
+
+    /// Creates a new [`Request`] from a byte array.
+    pub fn from_bytes(buf: &'a [u8]) -> Self {
+        assert!(buf.len() >= Self::HEADER_LEN);
+        Self(buf)
+    }
+
+    /// Data length.
+    pub fn len(&self) -> usize {
+        self.0.len() - Self::HEADER_LEN
+    }
+
+    /// Get command.
+    pub fn command(&self) -> Command {
+        let bytes = &self.0[0..4];
+        Command::from(u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
+    }
+
+    /// Get tag.
+    pub fn tag(&self) -> u16 {
+        let bytes = &self.0[4..6];
+        u16::from_le_bytes([bytes[0], bytes[1]])
+    }
+
+    /// Command data.
+    pub fn data(&self) -> &[u8] {
+        &self.0[8..]
+    }
 }
 
 /// Response status.
