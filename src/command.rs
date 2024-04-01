@@ -200,4 +200,19 @@ impl<'a> Response<'a> {
         &self.0[Self::HEADER_LEN..]
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_command() {
+        let command = Command::from(u32::MAX);
+        assert_eq!(command, Command::Other(u32::MAX));
+
+        let value = 123456;
+        let input = Command::from(value);
+        let output: u32 = input.into();
+        assert_eq!(value, output);
+    }
 }
