@@ -9,4 +9,4 @@ defmt = { version = "0.3", optional = true }
 zerocopy = { version = "0.7", features = ["derive"] }
 
 [features]
-defmt = ["dep:defmt"]
+defmt-03 = ["dep:defmt"]
