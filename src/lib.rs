@@ -35,6 +35,17 @@ impl From<&Packet<'_>> for PacketKind {
 }
 
 /// Packet view into a byte slice.
+///
+/// # Example
+///
+/// ```rust
+/// # use hftwo::Packet;
+/// # use std::str;
+/// let data = [0x86, 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x00]; // From USB HID stream or otherwise.
+/// let packet = Packet::from_bytes(&data); // Construct the packet
+/// let string = str::from_utf8(packet.data()).unwrap(); // Get the data
+/// println!("Output: {}", string); // Prints: "Output: Hello"
+/// ```
 pub struct Packet<'a>(&'a [u8]);
 
 impl<'a> Packet<'a> {
