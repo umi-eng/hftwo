@@ -58,6 +58,7 @@ impl<'a> Packet<'a> {
         self.0[0] as usize & 0b00111111
     }
 
+    /// Get the kind of packet.
     pub fn kind(&self) -> PacketKind {
         PacketKind::from(self)
     }
