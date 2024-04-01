@@ -38,6 +38,22 @@ impl From<&Packet<'_>> for PacketKind {
 pub struct Packet<'a>(&'a [u8]);
 
 impl<'a> Packet<'a> {
+    /// Create a new packet.
+    ///
+    /// `buf` must be at least one byte longer than `data`.
+    pub fn new(buf: &'a mut [u8], kind: PacketKind, data: &[u8]) -> Self {
+        assert!(data.len() <= 63); // not too much data
+        assert!(buf.len() >= data.len() + 1); // enough space for header
+
+        // copy data into buffer
+        buf[1..][0..data.len()].copy_from_slice(data);
+
+        buf[0] = 0; // ensure bits are cleared
+        buf[0] |= data.len() as u8;
+        buf[0] |= kind as u8;
+        Self(buf)
+    }
+
     /// Create a new packet from a buffer.
     ///
     /// Panics if `buf` is larger than 64 bytes or less than 1 byte in size.
