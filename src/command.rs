@@ -57,7 +57,6 @@ impl Into<u32> for Command {
 /// Command request.
 #[derive(Debug)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
-#[repr(C)]
 pub struct Request<'a>(&'a [u8]);
 
 impl<'a> Request<'a> {
@@ -152,7 +151,6 @@ impl Into<u8> for Status {
 /// Command response.
 #[derive(Debug)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
-#[repr(C)]
 pub struct Response<'a>(&'a [u8]);
 
 impl<'a> Response<'a> {
