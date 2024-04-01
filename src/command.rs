@@ -1,3 +1,5 @@
+use crate::{Packet, PacketKind};
+
 /// Commands.
 ///
 /// Specifies the commands in the spec as well as `Other` for user-defined
@@ -109,6 +111,48 @@ impl<'a> Request<'a> {
     pub fn data(&self) -> &[u8] {
         &self.0[8..]
     }
+
+    /// Get a [`Packet`] iterator.
+    pub fn into_packet_iter(&self) -> RequestPacketIter {
+        RequestPacketIter {
+            request: self,
+            chunk: 0,
+        }
+    }
+}
+
+/// Request packet iterator.
+///
+/// Doesn't implement the [`Iterator`] trait because of some no-allocation
+/// constraints.
+#[derive(Debug)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
+pub struct RequestPacketIter<'a> {
+    request: &'a Request<'a>,
+    chunk: usize,
+}
+
+impl<'a> RequestPacketIter<'a> {
+    /// Get the next packet using `buf` to store the packet data.
+    pub fn next<'b>(&mut self, buf: &'b mut [u8]) -> Option<Packet<'b>> {
+        let chunks = self.request.0.chunks(Packet::MAX_LEN);
+
+        let chunk = match self.request.0.chunks(Packet::MAX_LEN).nth(self.chunk) {
+            Some(c) => c,
+            None => return None,
+        };
+
+        let kind = if chunks.count() - 1 == self.chunk {
+            PacketKind::CommandFinal
+        } else {
+            PacketKind::CommandInner
+        };
+
+        // increment to next chunk
+        self.chunk += 1;
+
+        Some(Packet::new(buf, kind, chunk))
+    }
 }
 
 /// Response status.
@@ -212,5 +256,33 @@ mod tests {
         let input = Command::from(value);
         let output: u32 = input.into();
         assert_eq!(value, output);
+    }
+
+    #[test]
+    fn test_request() {
+        let mut buf = [0; 256];
+        let data = [0x55; 256 - Request::HEADER_LEN];
+        let request = Request::new(&mut buf, Command::Info, 0x123, &data);
+
+        let mut packet_iter = request.into_packet_iter();
+
+        let mut iter_count = 0;
+        let mut byte_count = 0;
+
+        loop {
+            let mut buf = [0; 64];
+            match packet_iter.next(&mut buf) {
+                Some(packet) => {
+                    byte_count += packet.data().len();
+                    iter_count += 1;
+
+                    println!("{:?}", packet.kind());
+                }
+                None => break,
+            }
+        }
+
+        assert_eq!(iter_count, 5);
+        assert_eq!(byte_count, 256);
     }
 }
