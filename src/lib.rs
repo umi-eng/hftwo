@@ -9,7 +9,7 @@ impl<'a> Packet<'a> {
     /// Create a new packet from a buffer.
     ///
     /// Panics if `buf` is larger than 64 bytes or less than 1 byte in size.
-    pub fn new(buf: &'a [u8]) -> Self {
+    pub fn from_bytes(buf: &'a [u8]) -> Self {
         assert!(buf.len() > 0);
         assert!(buf.len() <= 64);
 
