@@ -48,7 +48,7 @@ impl<'a> Packet<'a> {
 
     /// Access the packet data.
     pub fn data(&self) -> &[u8] {
-        &self.0[0..self.0.len()]
+        &self.0[1..self.len() + 1]
     }
 }
 
