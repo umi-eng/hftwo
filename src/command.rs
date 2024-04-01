@@ -2,7 +2,7 @@
 ///
 /// Specifies the commands in the spec as well as `Other` for user-defined
 /// commands.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(u32)]
 pub enum Command {
@@ -67,7 +67,7 @@ pub struct Request<'a> {
 }
 
 /// Response status.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(u32)]
 pub enum Status {
