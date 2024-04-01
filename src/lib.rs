@@ -51,6 +51,9 @@ impl From<&Packet<'_>> for PacketKind {
 pub struct Packet<'a>(&'a [u8]);
 
 impl<'a> Packet<'a> {
+    /// Maximum payload length.
+    pub const MAX_LEN: usize = 63;
+
     /// Create a new packet.
     ///
     /// `buf` must be at least one byte longer than `data`.
