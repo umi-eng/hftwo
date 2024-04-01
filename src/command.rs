@@ -36,6 +36,24 @@ impl From<u32> for Command {
     }
 }
 
+impl Into<u32> for Command {
+    fn into(self) -> u32 {
+        match self {
+            Self::BinInfo => 0x0001,
+            Self::Info => 0x0002,
+            Self::ResetIntoApp => 0x0003,
+            Self::ResetIntoBootloader => 0x0004,
+            Self::StartFlash => 0x0005,
+            Self::WriteFlashPage => 0x0006,
+            Self::ChecksumPages => 0x0007,
+            Self::ReadWords => 0x0008,
+            Self::WriteWords => 0x0009,
+            Self::Dmesg => 0x0010,
+            Self::Other(value) => value,
+        }
+    }
+}
+
 /// Command request.
 #[derive(Debug)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
